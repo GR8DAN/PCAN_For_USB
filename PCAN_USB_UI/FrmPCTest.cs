@@ -47,7 +47,7 @@ namespace CAN.PC
                 //int remainder = ErrorCount % 10;
                 if ((ErrorCount++ % 10) == 0)
                 {
-                    LstStatus.SelectedIndex = LstStatus.Items.Add("Plug in a PEAK PCAN USB Adapter");
+                    AddMessage(LstStatus,"Plug in a PEAK PCAN USB Adapter");
                 }
                 TimerCheckForDevice.Enabled = true;
             }
@@ -138,14 +138,15 @@ namespace CAN.PC
                 if(handle > 0)
                 {
                     pCAN.PeakCANHandle = handle;
-                    pCAN.InitializeCAN(pCAN.PeakCANHandle, LstBaudRate.Items[LstBaudRate.SelectedIndex].ToString());
+                    pCAN.InitializeCAN(pCAN.PeakCANHandle, LstBaudRate.Items[LstBaudRate.SelectedIndex].ToString(), true);
                     GrpMessage.Enabled = true;
                     GrpReading.Enabled = true;
+                    ChkTrace.Enabled = true;
                     ButStartStop.Text = "Stop";
                 }
                 else
                 {
-                    LstStatus.Items.Add("No device selected");
+                    AddMessage(LstStatus,"No device selected");
                 }
             }
             else
@@ -153,6 +154,7 @@ namespace CAN.PC
                 pCAN.Uninitialize();
                 GrpMessage.Enabled = false;
                 ButClear.Enabled = true;
+                ChkTrace.Enabled = false;
                 ButStartStop.Text = "Start";
             }
         }
@@ -164,16 +166,16 @@ namespace CAN.PC
             for (int i=0; i<(int)NudLength.Value; i++)
             {
                 if(!Byte.TryParse(((TextBox)GrpMessage.Controls.Find("TxtData" + i.ToString(), true)[0]).Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out data[i]))
-                    LstStatus.Items.Add("Error converting data to send:"+ ((TextBox)GrpMessage.Controls.Find("TxtData" + i.ToString(), true)[0]).Text);
+                    AddMessage(LstStatus,"Error converting data to send:"+ ((TextBox)GrpMessage.Controls.Find("TxtData" + i.ToString(), true)[0]).Text);
             }
             UInt32 id = UInt32.MaxValue;
             if(UInt32.TryParse(TxtId.Text, out id))
             {
-                pCAN.WriteFrame(id, data);
+                pCAN.WriteFrame(id, data.Length, data);
             }
             else
             {
-                LstStatus.Items.Add("Error converting message id:" + TxtId.Text);
+                AddMessage(LstStatus,"Error converting message id:" + TxtId.Text);
             }
         }
         //Clear the displayed packets
@@ -220,15 +222,82 @@ namespace CAN.PC
                 TxtData0.Enabled = false;
         }
 
-        private void GrpMessage_Enter(object sender, EventArgs e)
-        {
-
-        }
-
         private void ChkOverwrite_CheckedChanged(object sender, EventArgs e)
         {
             pCAN.OverwriteLastPacket = ChkOverwrite.Checked;
             LstReceivedMessages.Items.Clear();
+        }
+
+        #region Logging
+
+        private void ChkTrace_CheckedChanged(object sender, EventArgs e)
+        {
+            if (ChkTrace.Checked)
+            {
+                GrpTrace.Enabled = true;
+            }
+            else
+            {
+                pCAN.StopLogging();
+                GrpTrace.Enabled = false;
+            }
+        }
+
+        private void ButLogging_Click(object sender, EventArgs e)
+        {
+            if (ChkTrace.Checked && (ButLogging.Text == "Start"))
+            {
+                if (pCAN.StartLogging(TxtTraceDir.Text, ChkMultiFile.Checked, ChkDateFiles.Checked, (UInt32)NudTraceSize.Value))
+                {
+                    AddMessage(LstStatus, "Logging started.");
+                    ButLogging.Text = "Stop";
+                }
+                else
+                {
+                    AddMessage(LstStatus, "Failed to start logging.");
+                }
+            }
+            else
+            {
+                if (!pCAN.StopLogging())
+                {
+                    AddMessage(LstStatus, "Logging stopped.");
+                }
+                ButLogging.Text = "Start";
+            }
+        }
+        #endregion
+
+        #region Utils
+        private int AddMessage(ListBox AddTo, string MessageToAdd)
+        {
+            int ret = -1;
+
+            if (AddTo != null)
+            {
+                //Limit number of items
+                if (AddTo.Items.Count >= 60000)
+                    AddTo.Items.RemoveAt(0);
+                ret = AddTo.Items.Add(MessageToAdd);
+                //ensure new item is visible
+                AddTo.TopIndex = AddTo.Items.Count - 1;
+                return ret;
+            }
+
+            return ret;
+        }
+        #endregion
+
+        private void ButChooseFile_Click(object sender, EventArgs e)
+        {
+            using (FolderBrowserDialog dlg = new FolderBrowserDialog())
+            {
+                dlg.Description = "Select a folder for the trace file";
+                if (dlg.ShowDialog() == DialogResult.OK)
+                {
+                    TxtTraceDir.Text = dlg.SelectedPath;
+                }
+            }
         }
     }
 }

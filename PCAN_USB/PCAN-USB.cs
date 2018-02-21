@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using System.Globalization;
+using System.IO;
 
 namespace CAN.PC
 {
@@ -403,6 +404,7 @@ namespace CAN.PC
         /// <returns>A TPCANStatus error code</returns>
         private void ReadMessage()
         {
+            //TODO move to moduel level for performance
             TPCANMsg CANMsg;
             TPCANTimestamp CANTimeStamp;
             TPCANStatus stsResult;
@@ -442,8 +444,7 @@ namespace CAN.PC
 
             if (LastOperationStatus != TPCANStatus.PCAN_ERROR_OK)
             {
-                AddMessage(Feedback, PeakCANStatusErrorString(LastOperationStatus));
-                return;
+                //throw new Exception(PeakCANStatusErrorString(LastOperationStatus));
             }
 
             if (ControlForm != null)
@@ -455,12 +456,12 @@ namespace CAN.PC
                         // Process Receive-Event using .NET Invoke function
                         // in order to interact with Winforms UI (calling the 
                         // function ReadMessage)
-                        if(RxMessages)  //Double check reading is still required
+                        if (RxMessages)  //Double check reading is still required
                             ControlForm.Invoke(ReadDelegate);
                 }
             }
             else
-                AddMessage(Feedback, "No control form set.");
+                 throw new Exception("No control form set.");
         }
         /// <summary>
         /// Set up the CAN Rx thread
@@ -474,6 +475,105 @@ namespace CAN.PC
             RxMessages = true;  //allow rx
             ReadThread.Start();
         }
+        #endregion
+
+        #region Logging
+
+        /// <summary>
+        /// Configures the PCAN-Trace file for a PCAN-Basic Channel
+        /// </summary>
+        private void ConfigureTraceFile(string TraceDirectory, bool MultipleFiles, bool TimeStampName, UInt32 MaxMegabytes)
+        {
+            UInt32 iBuffer;
+            TPCANStatus stsResult;
+
+            // Configure the size of a trace file (max 100 MBs)
+            stsResult = PCANBasic.SetValue(PeakCANHandle, TPCANParameter.PCAN_TRACE_SIZE, ref MaxMegabytes, sizeof(UInt32));
+            if (stsResult != TPCANStatus.PCAN_ERROR_OK)
+                AddMessage(Feedback, GetFormatedError(stsResult));
+
+            //Configure trace location
+            stsResult = PCANBasic.SetValue(PeakCANHandle, TPCANParameter.PCAN_TRACE_LOCATION, TraceDirectory, (uint) TraceDirectory.Length);
+            if (stsResult != TPCANStatus.PCAN_ERROR_OK)
+                AddMessage(Feedback, GetFormatedError(stsResult));
+
+            //Single or multiple files
+            if(MultipleFiles)
+                iBuffer = PCANBasic.TRACE_FILE_SEGMENTED | PCANBasic.TRACE_FILE_OVERWRITE;
+            else
+                iBuffer = PCANBasic.TRACE_FILE_SINGLE | PCANBasic.TRACE_FILE_OVERWRITE;
+            
+            if(TimeStampName)
+                iBuffer = iBuffer | PCANBasic.TRACE_FILE_DATE | PCANBasic.TRACE_FILE_TIME;
+ 
+            stsResult = PCANBasic.SetValue(PeakCANHandle, TPCANParameter.PCAN_TRACE_CONFIGURE, ref iBuffer, sizeof(UInt32));
+            if (stsResult != TPCANStatus.PCAN_ERROR_OK)
+                AddMessage(Feedback, GetFormatedError(stsResult));
+        }
+
+        /// <summary>
+        /// Help Function used to get an error as text
+        /// </summary>
+        /// <param name="error">Error code to be translated</param>
+        /// <returns>A text with the translated error</returns>
+        private string GetFormatedError(TPCANStatus error)
+        {
+            StringBuilder strTemp;
+
+            // Creates a buffer big enough for a error-text
+            //
+            strTemp = new StringBuilder(256);
+            // Gets the text using the GetErrorText API function
+            // If the function success, the translated error is returned. If it fails,
+            // a text describing the current error is returned.
+            //
+            if (PCANBasic.GetErrorText(error, 0, strTemp) != TPCANStatus.PCAN_ERROR_OK)
+                return string.Format("An error occurred. Error-code's text ({0:X}) couldn't be retrieved", error);
+            else
+                return strTemp.ToString();
+        }
+
+
+        bool logging;
+
+        public bool StartLogging(string DirectoryForLogFile, bool MultipleFiles, bool TimestampName, UInt32 MaxMegabytes)
+        {
+            TPCANStatus stsResult;  //result of call to PEAK
+            UInt32 iBuffer; //Int buffer to send to peak
+            logging = false;    //true is logging turned on 9return value)
+
+            if(Directory.Exists(DirectoryForLogFile))
+            {
+                ConfigureTraceFile(DirectoryForLogFile, MultipleFiles, TimestampName, MaxMegabytes);
+            }
+            else
+            {
+                ConfigureTraceFile("", MultipleFiles, TimestampName, MaxMegabytes);
+                AddMessage(Feedback, "Directory for trace file: " + DirectoryForLogFile + ", not set (doesn't exist), default is exe location.");
+            }
+
+            iBuffer = (uint)PCANBasic.PCAN_PARAMETER_ON;
+            stsResult = PCANBasic.SetValue(PeakCANHandle, TPCANParameter.PCAN_TRACE_STATUS, ref iBuffer, sizeof(UInt32));
+            if (stsResult == TPCANStatus.PCAN_ERROR_OK)
+            {
+                AddMessage(Feedback, "Trace log on");
+                logging = true;
+            }
+            return logging;
+        }
+
+        public bool StopLogging()
+        {
+            UInt32 iBuffer = (uint)PCANBasic.PCAN_PARAMETER_OFF;
+            TPCANStatus stsResult = PCANBasic.SetValue(PeakCANHandle, TPCANParameter.PCAN_TRACE_STATUS, ref iBuffer, sizeof(UInt32));
+            if (stsResult == TPCANStatus.PCAN_ERROR_OK)
+            {
+                AddMessage(Feedback, "Trace log off");
+                logging = false;
+            }
+            return logging;
+        }
+
         #endregion
 
         #region Construction
@@ -505,12 +605,12 @@ namespace CAN.PC
         /// <param name="CANHandle">PEAK USB handle</param>
         /// <param name="CANBaudRate">Baud rate as displayed</param>
         /// <returns>Device operation status</returns>
-        public TPCANStatus InitializeCAN(PCANHandle CANHandle, string CANBaudRate)
+        public TPCANStatus InitializeCAN(PCANHandle CANHandle, string CANBaudRate, bool EnableRead)
         {
             LastOperationStatus = PCANBasic.Initialize(CANHandle, CANBaudRateToPeakCANBaudRate(CANBaudRate), (TPCANType)0, 0, 0);
             InitializeMessage();
             //Setup receive
-            SetCANMessageRead();
+            if(EnableRead) SetCANMessageRead();
             return LastOperationStatus;
         }
         /// <summary>
@@ -560,7 +660,7 @@ namespace CAN.PC
         #endregion
 
         #region Write a CAN packet
-        public TPCANStatus WriteFrame(UInt32 Id, byte[] Data)
+        public TPCANStatus WriteFrame(UInt32 Id, int DataLength, byte[] Data)
         {
             TPCANMsg CANMsg;
 
@@ -571,7 +671,7 @@ namespace CAN.PC
             CANMsg.MSGTYPE = TPCANMessageType.PCAN_MESSAGE_STANDARD;
             // Message contents (ID, Length of the Data, Data)
             CANMsg.ID = Id;
-            CANMsg.LEN = (byte)Data.Length;
+            CANMsg.LEN = (byte)DataLength;
             CANMsg.DATA = Data;
 
             // The message is sent to the configured hardware
