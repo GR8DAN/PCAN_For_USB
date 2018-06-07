@@ -161,7 +161,7 @@ namespace CAN.PC
         //Send the defined CAN data
         private void ButSend_Click(object sender, EventArgs e)
         {
-            byte[] data = new byte[(int)NudLength.Value];
+            byte[] data = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
             for (int i=0; i<(int)NudLength.Value; i++)
             {
@@ -171,7 +171,7 @@ namespace CAN.PC
             UInt32 id = UInt32.MaxValue;
             if(UInt32.TryParse(TxtId.Text, out id))
             {
-                pCAN.WriteFrame(id, data.Length, data);
+                pCAN.WriteFrame(id, (int)NudLength.Value, data);
             }
             else
             {
