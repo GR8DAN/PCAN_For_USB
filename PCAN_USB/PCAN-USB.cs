@@ -135,6 +135,10 @@ namespace CAN.PC
         /// For showing the received messages
         /// </summary>
         public ListBox ReceivedMessages { get; set; } = null;
+
+        //First packet read
+        public Packet DiffPacket { get; set; } = null;
+        
         /// <summary>
         /// Add a message to a UI listbox
         /// </summary>
@@ -284,6 +288,19 @@ namespace CAN.PC
             public byte[] Data { set; get; }
             //Index for displaying in list boxes
             public int DisplayIndex { get; set; } = -1;
+
+            public static Packet Clone(Packet PacketToClone)
+            {
+                Packet pkt = new Packet();
+                pkt.Microseconds = PacketToClone.Microseconds;
+                pkt.Id = PacketToClone.Id;
+                pkt.Length = PacketToClone.Length;
+                pkt.Data = PacketToClone.Data.Clone() as byte[];
+                pkt.DisplayIndex = PacketToClone.DisplayIndex;
+
+                return pkt;
+            }
+
         }
         /// <summary>
         /// List of all packets
@@ -304,7 +321,7 @@ namespace CAN.PC
         {
             sb = new StringBuilder();
 
-            sb.Append((ThisPacket.Microseconds / 1000000.0f).ToString("F6", CultureInfo.InvariantCulture));
+            sb.Append((ThisPacket.Microseconds / 1000000.0d).ToString("F6", CultureInfo.InvariantCulture));
             sb.Append(' ');
             sb.Append(ThisPacket.Id);
             sb.Append(' ');
@@ -367,7 +384,66 @@ namespace CAN.PC
             packet.Id = CANId;
             packet.Length = DataLength;
             packet.Data = Data;
+
+            //remember first packet for diff calc
+            if (DiffPacket==null)
+            {
+                AddMessage(Feedback, "First packet received " + PacketToString(packet));
+                DiffPacket = Packet.Clone(packet);
+            }
             return packet;
+        }
+        #endregion
+
+        #region Specific Packet Monitoring
+        public bool WatchForPackets = false;
+        /// <summary>
+        /// List of packets to watch out for
+        /// </summary>
+        public List<Packet> WatchPackets { get; set; } = new List<Packet>();
+
+        public void SetWatchPackets()
+        {
+            Packet aPacket = new Packet();
+            byte[] data = { 1 };
+            aPacket.Id = 534;
+            aPacket.Length = 1;
+            aPacket.Data = data;
+            WatchPackets.Add(aPacket);
+/*
+            aPacket = new Packet();
+            data = new byte[]{ 1 };
+            aPacket.Id = 534;
+            aPacket.Length = 1;
+            aPacket.Data = data;
+            WatchPackets.Add(aPacket);
+ */       }
+
+        public bool FoundPacket()
+        {
+            bool ret = false;
+
+            foreach (Packet packet in WatchPackets)
+            {
+                if (packet.Id == CurrentPacket.Id)
+                {
+                    if (packet.Length == CurrentPacket.Length)
+                    {
+                        for (int i = 0; i < packet.Length && i < CurrentPacket.Length; i++)
+                        {
+                            if (packet.Data[i] == CurrentPacket.Data[i])
+                                ret = true;
+                            else
+                                ret = false;
+                        }
+                        if (ret)
+                            //found exact match, exit
+                            break;
+                    }
+                }
+            }
+
+            return ret;
         }
         #endregion
 
@@ -426,6 +502,26 @@ namespace CAN.PC
                         AddMessage(ReceivedMessages, PacketToString(CurrentPacket), CurrentPacket.DisplayIndex);
                     else
                         CurrentPacket.DisplayIndex = AddMessage(ReceivedMessages, PacketToString(CurrentPacket));
+                    if (WatchForPackets)
+                    {
+                        if (FoundPacket())
+                        {
+                            AddMessage(Feedback, "Found " + PacketToString(CurrentPacket) + " " + DateTime.Now.ToLocalTime());
+                            if(DiffPacket!=null)
+                            {
+                                ulong diff = CurrentPacket.Microseconds - DiffPacket.Microseconds;
+                                AddMessage(Feedback, "Diff: " + (Convert.ToDouble(diff) / 1000000.0d).ToString("F6", CultureInfo.InvariantCulture) + " " + DateTime.Now.ToLocalTime());
+                            }
+                            else
+                            {
+                                AddMessage(Feedback, "First Packet");
+                            }
+                            Console.Beep();
+                            DiffPacket = Packet.Clone(CurrentPacket);
+                        }
+                            
+
+                    }
                 }
                 if (stsResult == TPCANStatus.PCAN_ERROR_ILLOPERATION)
                     break;
