@@ -8,19 +8,20 @@
 //
 //  ------------------------------------------------------------------
 //  Author : Keneth Wagner
-//	Last change: 18.05.2016 Wagner
+//	Last change: 13.11.2017 Wagner
 //
 //  Language: C# 1.0
 //  ------------------------------------------------------------------
 //
-//  Copyright (C) 1999-2016  PEAK-System Technik GmbH, Darmstadt
+//  Copyright (C) 1999-2017  PEAK-System Technik GmbH, Darmstadt
 //  more Info at http://www.peak-system.com 
 //
 using System;
 using System.Text;
 using System.Runtime.InteropServices;
 
-namespace CAN.PC
+// Namespace changed from PEAK's Peak.Can.Basic to CAN.PC
+namespace CAN.PC    
 {    
     using TPCANHandle = System.UInt16;    
     using TPCANBitrateFD = System.String;
@@ -313,6 +314,50 @@ namespace CAN.PC
         /// Status of the Virtual PCAN-Gateway Service 
         /// </summary>
         PCAN_LAN_SERVICE_STATUS  = 29,
+        /// <summary>
+        /// Status messages reception status within a PCAN-Channel
+        /// </summary>
+        PCAN_ALLOW_STATUS_FRAMES = 30,
+        /// <summary>
+        /// RTR messages reception status within a PCAN-Channel
+        /// </summary>
+        PCAN_ALLOW_RTR_FRAMES = 31,
+        /// <summary>
+        /// Error messages reception status within a PCAN-Channel
+        /// </summary>
+        PCAN_ALLOW_ERROR_FRAMES = 32,
+        /// <summary>
+        /// Delay, in microseconds, between sending frames
+        /// </summary>
+        PCAN_INTERFRAME_DELAY = 33,
+        /// <summary>
+        /// Filter over code and mask patterns for 11-Bit messages
+        /// </summary>
+        PCAN_ACCEPTANCE_FILTER_11BIT = 34,
+        /// <summary>
+        /// Filter over code and mask patterns for 29-Bit messages
+        /// </summary>
+        PCAN_ACCEPTANCE_FILTER_29BIT = 35,
+        /// <summary>
+        /// Output mode of 32 digital I/O pin of a PCAN-USB Chip. 1: Output-Active 0 : Output Inactive
+        /// </summary>
+        PCAN_IO_DIGITAL_CONFIGURATION = 36,
+        /// <summary>
+        /// Value assigned to a 32 digital I/O pins of a PCAN-USB Chip
+        /// </summary>
+        PCAN_IO_DIGITAL_VALUE = 37,
+        /// <summary>
+        /// Value assigned to a 32 digital I/O pins of a PCAN-USB Chip - Multiple digital I/O pins to 1 = High
+        /// </summary>
+        PCAN_IO_DIGITAL_SET = 38,
+        /// <summary>
+        /// Clear multiple digital I/O pins to 0
+        /// </summary>
+        PCAN_IO_DIGITAL_CLEAR = 39,
+        /// <summary>
+        /// Get value of a single analog input pin
+        /// </summary>
+        PCAN_IO_ANALOG_VALUE = 40,
     }
 
     /// <summary>
@@ -345,6 +390,10 @@ namespace CAN.PC
         /// The PCAN message represents a FD error state indicator(CAN FD transmitter was error active)
         /// </summary>
         PCAN_MESSAGE_ESI = 0x10,
+        /// <summary>
+        /// The PCAN message represents an error frame
+        /// </summary>
+        PCAN_MESSAGE_ERRFRAME = 0x40,
         /// <summary>
         /// The PCAN message represents a PCAN status message
         /// </summary>
@@ -936,7 +985,15 @@ namespace CAN.PC
         /// Device supports flexible data-rate (CAN-FD)
         /// </summary>
         public const int FEATURE_FD_CAPABLE = 0x01;
-    
+		/// <summary>
+		/// Device supports a delay between sending frames (FPGA based USB devices)
+		/// </summary>
+		public const int FEATURE_DELAY_CAPABLE = 0x02;
+        /// <summary>
+        /// Device supports I/O functionality for electronic circuits (USB-Chip devices)
+        /// </summary>
+        public const int FEATURE_IO_CAPABLE = 0x04;
+
         /// <summary>
         /// The service is not running
         /// </summary>
@@ -992,8 +1049,8 @@ namespace CAN.PC
         /// * Couples of Parameter/value must be separated by ','
         /// * Following Parameter must be filled out: f_clock, data_brp, data_sjw, data_tseg1, data_tseg2,
         ///   nom_brp, nom_sjw, nom_tseg1, nom_tseg2.
-        /// * Following Parameters are optional (not used yet): data_ssp_offset, nom_samp</remarks>
-        /// <example>f_clock_mhz=80, nom_brp=1, nom_tset1=63, nom_tseg2=16, nom_sjw=7, data_brp=4, data_tset1=12, data_tseg2=7, data_sjw=1</example>
+        /// * Following Parameters are optional (not used yet): data_ssp_offset, nom_sam</remarks>
+        /// <example>f_clock=80000000,nom_brp=10,nom_tseg1=5,nom_tseg2=2,nom_sjw=1,data_brp=4,data_tseg1=7,data_tseg2=2,data_sjw=1</example>
         /// <returns>A TPCANStatus error code</returns>
         [DllImport("PCANBasic.dll", EntryPoint = "CAN_InitializeFD")]
         public static extern TPCANStatus InitializeFD(
@@ -1190,6 +1247,26 @@ namespace CAN.PC
             UInt32 BufferLength);
 
         /// <summary>
+        /// Retrieves a PCAN Channel value
+        /// </summary>
+        /// <remarks>Parameters can be present or not according with the kind 
+        /// of Hardware (PCAN Channel) being used. If a parameter is not available,
+        /// a PCAN_ERROR_ILLPARAMTYPE error will be returned</remarks>
+        /// <param name="Channel">The handle of a PCAN Channel</param>
+        /// <param name="Parameter">The TPCANParameter parameter to get</param>
+        /// <param name="NumericBuffer">Buffer for the parameter value</param>
+        /// <param name="BufferLength">Size in bytes of the buffer</param>
+        /// <returns>A TPCANStatus error code</returns>
+        [DllImport("PCANBasic.dll", EntryPoint = "CAN_GetValue")]
+        public static extern TPCANStatus GetValue(
+            [MarshalAs(UnmanagedType.U2)]
+            TPCANHandle Channel,
+            [MarshalAs(UnmanagedType.U1)]
+            TPCANParameter Parameter,
+            out UInt64 NumericBuffer,
+            UInt32 BufferLength);
+
+        /// <summary>
         /// Configures or sets a PCAN Channel value 
         /// </summary>
         /// <remarks>Parameters can be present or not according with the kind 
@@ -1207,6 +1284,26 @@ namespace CAN.PC
             [MarshalAs(UnmanagedType.U1)]
             TPCANParameter Parameter,
             ref UInt32 NumericBuffer,
+            UInt32 BufferLength);
+
+        /// <summary>
+        /// Configures or sets a PCAN Channel value 
+        /// </summary>
+        /// <remarks>Parameters can be present or not according with the kind 
+        /// of Hardware (PCAN Channel) being used. If a parameter is not available,
+        /// a PCAN_ERROR_ILLPARAMTYPE error will be returned</remarks>
+        /// <param name="Channel">The handle of a PCAN Channel</param>
+        /// <param name="Parameter">The TPCANParameter parameter to set</param>
+        /// <param name="NumericBuffer">Buffer with the value to be set</param>
+        /// <param name="BufferLength">Size in bytes of the buffer</param>
+        /// <returns>A TPCANStatus error code</returns>
+        [DllImport("PCANBasic.dll", EntryPoint = "CAN_SetValue")]
+        public static extern TPCANStatus SetValue(
+            [MarshalAs(UnmanagedType.U2)]
+            TPCANHandle Channel,
+            [MarshalAs(UnmanagedType.U1)]
+            TPCANParameter Parameter,
+            ref UInt64 NumericBuffer,
             UInt32 BufferLength);
 
         /// <summary>
