@@ -68,6 +68,7 @@
             this.LblTraceDir = new System.Windows.Forms.Label();
             this.ButChooseFile = new System.Windows.Forms.Button();
             this.ButLogging = new System.Windows.Forms.Button();
+            this.ChkIdentifyPCANUSB = new System.Windows.Forms.CheckBox();
             this.GrpInitialize.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.NudLength)).BeginInit();
             this.GrpMessage.SuspendLayout();
@@ -88,6 +89,7 @@
             // 
             // GrpInitialize
             // 
+            this.GrpInitialize.Controls.Add(this.ChkIdentifyPCANUSB);
             this.GrpInitialize.Controls.Add(this.ChkTrace);
             this.GrpInitialize.Controls.Add(this.LstBaudRate);
             this.GrpInitialize.Controls.Add(this.ButStartStop);
@@ -95,7 +97,7 @@
             this.GrpInitialize.Enabled = false;
             this.GrpInitialize.Location = new System.Drawing.Point(165, 9);
             this.GrpInitialize.Name = "GrpInitialize";
-            this.GrpInitialize.Size = new System.Drawing.Size(163, 112);
+            this.GrpInitialize.Size = new System.Drawing.Size(176, 112);
             this.GrpInitialize.TabIndex = 3;
             this.GrpInitialize.TabStop = false;
             this.GrpInitialize.Text = "Initialize";
@@ -107,7 +109,7 @@
             this.ChkTrace.Location = new System.Drawing.Point(107, 65);
             this.ChkTrace.Name = "ChkTrace";
             this.ChkTrace.Size = new System.Drawing.Size(54, 17);
-            this.ChkTrace.TabIndex = 28;
+            this.ChkTrace.TabIndex = 7;
             this.ChkTrace.Text = "Trace";
             this.ChkTrace.UseVisualStyleBackColor = true;
             this.ChkTrace.CheckedChanged += new System.EventHandler(this.ChkTrace_CheckedChanged);
@@ -145,8 +147,8 @@
             this.LstStatus.FormattingEnabled = true;
             this.LstStatus.Location = new System.Drawing.Point(8, 275);
             this.LstStatus.Name = "LstStatus";
-            this.LstStatus.Size = new System.Drawing.Size(567, 69);
-            this.LstStatus.TabIndex = 26;
+            this.LstStatus.Size = new System.Drawing.Size(584, 69);
+            this.LstStatus.TabIndex = 38;
             // 
             // TxtData7
             // 
@@ -155,7 +157,7 @@
             this.TxtData7.MaxLength = 2;
             this.TxtData7.Name = "TxtData7";
             this.TxtData7.Size = new System.Drawing.Size(24, 20);
-            this.TxtData7.TabIndex = 20;
+            this.TxtData7.TabIndex = 22;
             this.TxtData7.Text = "00";
             this.TxtData7.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
@@ -166,7 +168,7 @@
             this.TxtData6.MaxLength = 2;
             this.TxtData6.Name = "TxtData6";
             this.TxtData6.Size = new System.Drawing.Size(24, 20);
-            this.TxtData6.TabIndex = 19;
+            this.TxtData6.TabIndex = 21;
             this.TxtData6.Text = "00";
             this.TxtData6.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
@@ -177,7 +179,7 @@
             this.TxtData5.MaxLength = 2;
             this.TxtData5.Name = "TxtData5";
             this.TxtData5.Size = new System.Drawing.Size(24, 20);
-            this.TxtData5.TabIndex = 18;
+            this.TxtData5.TabIndex = 20;
             this.TxtData5.Text = "00";
             this.TxtData5.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
@@ -188,7 +190,7 @@
             this.TxtData4.MaxLength = 2;
             this.TxtData4.Name = "TxtData4";
             this.TxtData4.Size = new System.Drawing.Size(24, 20);
-            this.TxtData4.TabIndex = 17;
+            this.TxtData4.TabIndex = 19;
             this.TxtData4.Text = "00";
             this.TxtData4.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
@@ -199,7 +201,7 @@
             this.TxtData3.MaxLength = 2;
             this.TxtData3.Name = "TxtData3";
             this.TxtData3.Size = new System.Drawing.Size(24, 20);
-            this.TxtData3.TabIndex = 16;
+            this.TxtData3.TabIndex = 18;
             this.TxtData3.Text = "00";
             this.TxtData3.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
@@ -210,7 +212,7 @@
             this.TxtData2.MaxLength = 2;
             this.TxtData2.Name = "TxtData2";
             this.TxtData2.Size = new System.Drawing.Size(24, 20);
-            this.TxtData2.TabIndex = 15;
+            this.TxtData2.TabIndex = 17;
             this.TxtData2.Text = "00";
             this.TxtData2.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
@@ -221,7 +223,7 @@
             this.TxtData1.MaxLength = 2;
             this.TxtData1.Name = "TxtData1";
             this.TxtData1.Size = new System.Drawing.Size(24, 20);
-            this.TxtData1.TabIndex = 14;
+            this.TxtData1.TabIndex = 16;
             this.TxtData1.Text = "00";
             this.TxtData1.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
@@ -232,7 +234,7 @@
             this.TxtData0.MaxLength = 2;
             this.TxtData0.Name = "TxtData0";
             this.TxtData0.Size = new System.Drawing.Size(24, 20);
-            this.TxtData0.TabIndex = 13;
+            this.TxtData0.TabIndex = 15;
             this.TxtData0.Text = "00";
             this.TxtData0.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
@@ -248,7 +250,7 @@
             this.NudLength.Name = "NudLength";
             this.NudLength.ReadOnly = true;
             this.NudLength.Size = new System.Drawing.Size(41, 20);
-            this.NudLength.TabIndex = 12;
+            this.NudLength.TabIndex = 14;
             this.NudLength.Value = new decimal(new int[] {
             8,
             0,
@@ -262,7 +264,7 @@
             this.LblNumBytes.Location = new System.Drawing.Point(2, 45);
             this.LblNumBytes.Name = "LblNumBytes";
             this.LblNumBytes.Size = new System.Drawing.Size(111, 13);
-            this.LblNumBytes.TabIndex = 11;
+            this.LblNumBytes.TabIndex = 13;
             this.LblNumBytes.Text = "Number of data bytes:";
             // 
             // TxtIdHex
@@ -271,7 +273,7 @@
             this.TxtIdHex.MaxLength = 3;
             this.TxtIdHex.Name = "TxtIdHex";
             this.TxtIdHex.Size = new System.Drawing.Size(73, 20);
-            this.TxtIdHex.TabIndex = 10;
+            this.TxtIdHex.TabIndex = 12;
             this.TxtIdHex.Text = "F";
             this.TxtIdHex.TextChanged += new System.EventHandler(this.TxtIdHex_TextChanged);
             // 
@@ -281,7 +283,7 @@
             this.TxtId.MaxLength = 4;
             this.TxtId.Name = "TxtId";
             this.TxtId.Size = new System.Drawing.Size(73, 20);
-            this.TxtId.TabIndex = 9;
+            this.TxtId.TabIndex = 11;
             this.TxtId.Text = "15";
             this.TxtId.TextChanged += new System.EventHandler(this.TxtId_TextChanged);
             // 
@@ -291,7 +293,7 @@
             this.LblCANId.Location = new System.Drawing.Point(2, 19);
             this.LblCANId.Name = "LblCANId";
             this.LblCANId.Size = new System.Drawing.Size(41, 13);
-            this.LblCANId.TabIndex = 8;
+            this.LblCANId.TabIndex = 10;
             this.LblCANId.Text = "CAN Id";
             // 
             // ButSend
@@ -300,7 +302,7 @@
             this.ButSend.Margin = new System.Windows.Forms.Padding(2);
             this.ButSend.Name = "ButSend";
             this.ButSend.Size = new System.Drawing.Size(50, 19);
-            this.ButSend.TabIndex = 21;
+            this.ButSend.TabIndex = 23;
             this.ButSend.Text = "Send";
             this.ButSend.UseVisualStyleBackColor = true;
             this.ButSend.Click += new System.EventHandler(this.ButSend_Click);
@@ -322,10 +324,10 @@
             this.GrpMessage.Controls.Add(this.TxtData7);
             this.GrpMessage.Controls.Add(this.TxtData6);
             this.GrpMessage.Enabled = false;
-            this.GrpMessage.Location = new System.Drawing.Point(333, 9);
+            this.GrpMessage.Location = new System.Drawing.Point(347, 9);
             this.GrpMessage.Name = "GrpMessage";
             this.GrpMessage.Size = new System.Drawing.Size(245, 112);
-            this.GrpMessage.TabIndex = 7;
+            this.GrpMessage.TabIndex = 9;
             this.GrpMessage.TabStop = false;
             this.GrpMessage.Text = "Transmit Message";
             // 
@@ -336,7 +338,7 @@
             this.LblStatus.Location = new System.Drawing.Point(5, 259);
             this.LblStatus.Name = "LblStatus";
             this.LblStatus.Size = new System.Drawing.Size(95, 13);
-            this.LblStatus.TabIndex = 25;
+            this.LblStatus.TabIndex = 37;
             this.LblStatus.Text = "System Messages:";
             // 
             // GrpReading
@@ -350,8 +352,8 @@
             this.GrpReading.Enabled = false;
             this.GrpReading.Location = new System.Drawing.Point(8, 177);
             this.GrpReading.Name = "GrpReading";
-            this.GrpReading.Size = new System.Drawing.Size(567, 77);
-            this.GrpReading.TabIndex = 22;
+            this.GrpReading.Size = new System.Drawing.Size(584, 77);
+            this.GrpReading.TabIndex = 33;
             this.GrpReading.TabStop = false;
             this.GrpReading.Text = "Received Messages";
             // 
@@ -365,7 +367,7 @@
             this.ChkOverwrite.Margin = new System.Windows.Forms.Padding(2);
             this.ChkOverwrite.Name = "ChkOverwrite";
             this.ChkOverwrite.Size = new System.Drawing.Size(71, 17);
-            this.ChkOverwrite.TabIndex = 30;
+            this.ChkOverwrite.TabIndex = 36;
             this.ChkOverwrite.Text = "Overwrite";
             this.ChkOverwrite.UseVisualStyleBackColor = true;
             this.ChkOverwrite.CheckedChanged += new System.EventHandler(this.ChkOverwrite_CheckedChanged);
@@ -378,8 +380,8 @@
             this.LstReceivedMessages.FormattingEnabled = true;
             this.LstReceivedMessages.Location = new System.Drawing.Point(7, 20);
             this.LstReceivedMessages.Name = "LstReceivedMessages";
-            this.LstReceivedMessages.Size = new System.Drawing.Size(555, 30);
-            this.LstReceivedMessages.TabIndex = 29;
+            this.LstReceivedMessages.Size = new System.Drawing.Size(572, 30);
+            this.LstReceivedMessages.TabIndex = 34;
             // 
             // ButClear
             // 
@@ -389,7 +391,7 @@
             this.ButClear.Margin = new System.Windows.Forms.Padding(2);
             this.ButClear.Name = "ButClear";
             this.ButClear.Size = new System.Drawing.Size(50, 19);
-            this.ButClear.TabIndex = 24;
+            this.ButClear.TabIndex = 35;
             this.ButClear.Text = "Clear";
             this.ButClear.UseVisualStyleBackColor = true;
             this.ButClear.Click += new System.EventHandler(this.ButClear_Click);
@@ -424,8 +426,8 @@
             this.GrpTrace.Enabled = false;
             this.GrpTrace.Location = new System.Drawing.Point(8, 123);
             this.GrpTrace.Name = "GrpTrace";
-            this.GrpTrace.Size = new System.Drawing.Size(567, 48);
-            this.GrpTrace.TabIndex = 31;
+            this.GrpTrace.Size = new System.Drawing.Size(584, 48);
+            this.GrpTrace.TabIndex = 24;
             this.GrpTrace.TabStop = false;
             this.GrpTrace.Text = "Trace Settings";
             // 
@@ -435,7 +437,7 @@
             this.LblMaxSize.Location = new System.Drawing.Point(192, 20);
             this.LblMaxSize.Name = "LblMaxSize";
             this.LblMaxSize.Size = new System.Drawing.Size(54, 13);
-            this.LblMaxSize.TabIndex = 32;
+            this.LblMaxSize.TabIndex = 27;
             this.LblMaxSize.Text = "Max. MBs";
             // 
             // NudTraceSize
@@ -443,7 +445,7 @@
             this.NudTraceSize.Location = new System.Drawing.Point(252, 18);
             this.NudTraceSize.Name = "NudTraceSize";
             this.NudTraceSize.Size = new System.Drawing.Size(45, 20);
-            this.NudTraceSize.TabIndex = 31;
+            this.NudTraceSize.TabIndex = 28;
             this.NudTraceSize.Value = new decimal(new int[] {
             100,
             0,
@@ -458,7 +460,7 @@
             this.ChkDateFiles.Location = new System.Drawing.Point(96, 19);
             this.ChkDateFiles.Name = "ChkDateFiles";
             this.ChkDateFiles.Size = new System.Drawing.Size(89, 17);
-            this.ChkDateFiles.TabIndex = 30;
+            this.ChkDateFiles.TabIndex = 26;
             this.ChkDateFiles.Text = "Date in name";
             this.ChkDateFiles.UseVisualStyleBackColor = true;
             // 
@@ -470,7 +472,7 @@
             this.ChkMultiFile.Location = new System.Drawing.Point(6, 19);
             this.ChkMultiFile.Name = "ChkMultiFile";
             this.ChkMultiFile.Size = new System.Drawing.Size(83, 17);
-            this.ChkMultiFile.TabIndex = 29;
+            this.ChkMultiFile.TabIndex = 25;
             this.ChkMultiFile.Text = "Multiple files";
             this.ChkMultiFile.UseVisualStyleBackColor = true;
             // 
@@ -480,8 +482,8 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.TxtTraceDir.Location = new System.Drawing.Point(324, 17);
             this.TxtTraceDir.Name = "TxtTraceDir";
-            this.TxtTraceDir.Size = new System.Drawing.Size(145, 20);
-            this.TxtTraceDir.TabIndex = 25;
+            this.TxtTraceDir.Size = new System.Drawing.Size(162, 20);
+            this.TxtTraceDir.TabIndex = 30;
             this.TxtTraceDir.Text = "\\Temp";
             // 
             // LblTraceDir
@@ -490,17 +492,17 @@
             this.LblTraceDir.Location = new System.Drawing.Point(303, 20);
             this.LblTraceDir.Name = "LblTraceDir";
             this.LblTraceDir.Size = new System.Drawing.Size(23, 13);
-            this.LblTraceDir.TabIndex = 28;
+            this.LblTraceDir.TabIndex = 29;
             this.LblTraceDir.Text = "Dir:";
             // 
             // ButChooseFile
             // 
             this.ButChooseFile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.ButChooseFile.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ButChooseFile.Location = new System.Drawing.Point(475, 17);
+            this.ButChooseFile.Location = new System.Drawing.Point(492, 17);
             this.ButChooseFile.Name = "ButChooseFile";
             this.ButChooseFile.Size = new System.Drawing.Size(30, 20);
-            this.ButChooseFile.TabIndex = 26;
+            this.ButChooseFile.TabIndex = 31;
             this.ButChooseFile.Text = "...";
             this.ButChooseFile.UseVisualStyleBackColor = true;
             this.ButChooseFile.Click += new System.EventHandler(this.ButChooseFile_Click);
@@ -508,19 +510,30 @@
             // ButLogging
             // 
             this.ButLogging.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ButLogging.Location = new System.Drawing.Point(511, 17);
+            this.ButLogging.Location = new System.Drawing.Point(528, 17);
             this.ButLogging.Name = "ButLogging";
             this.ButLogging.Size = new System.Drawing.Size(50, 20);
-            this.ButLogging.TabIndex = 7;
+            this.ButLogging.TabIndex = 32;
             this.ButLogging.Text = "Start";
             this.ButLogging.UseVisualStyleBackColor = true;
             this.ButLogging.Click += new System.EventHandler(this.ButLogging_Click);
+            // 
+            // ChkIdentifyPCANUSB
+            // 
+            this.ChkIdentifyPCANUSB.AutoSize = true;
+            this.ChkIdentifyPCANUSB.Location = new System.Drawing.Point(107, 88);
+            this.ChkIdentifyPCANUSB.Name = "ChkIdentifyPCANUSB";
+            this.ChkIdentifyPCANUSB.Size = new System.Drawing.Size(60, 17);
+            this.ChkIdentifyPCANUSB.TabIndex = 8;
+            this.ChkIdentifyPCANUSB.Text = "I&dentify";
+            this.ChkIdentifyPCANUSB.UseVisualStyleBackColor = true;
+            this.ChkIdentifyPCANUSB.CheckStateChanged += new System.EventHandler(this.ChkIdentifyPCANUSB_CheckStateChanged);
             // 
             // FrmPCTest
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(582, 346);
+            this.ClientSize = new System.Drawing.Size(599, 346);
             this.Controls.Add(this.GrpTrace);
             this.Controls.Add(this.LblListOfDevices);
             this.Controls.Add(this.GrpReading);
@@ -590,6 +603,7 @@
         private System.Windows.Forms.Label LblTraceDir;
         private System.Windows.Forms.Button ButChooseFile;
         private System.Windows.Forms.Button ButLogging;
+        private System.Windows.Forms.CheckBox ChkIdentifyPCANUSB;
     }
 }
 

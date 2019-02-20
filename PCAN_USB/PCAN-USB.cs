@@ -23,7 +23,7 @@ namespace CAN.PC
         /// <summary>
         /// Define handles for PEAK USB devices 
         /// </summary>
-        PCANHandle[] handlesArray = new PCANHandle[]
+        static PCANHandle[] handlesArray = new PCANHandle[]
         {
             PCANBasic.PCAN_USBBUS1,
             PCANBasic.PCAN_USBBUS2,
@@ -50,22 +50,24 @@ namespace CAN.PC
         /// Get a list of connected devices
         /// </summary>
         /// <returns>List of devices</returns>
-        public List<string> GetUSBDevices()
+        public static List<string> GetUSBDevices()
         {
-            UInt32 iBuffer;
-            List<string> PCANDevices = null;
+            //Uses the PEAK System USB1 to USB16 handles for the PCAN-USB devices
+            TPCANStatus dllRet = TPCANStatus.PCAN_ERROR_UNKNOWN;    //Assume unknown state to start
+            UInt32 iBuffer; //Passed to PCAN dll in GetValue call
+            List<string> PCANDevices = null;    //The list of devices to return
 
-            bool isFD;  //CAN Flexible Data Rate (not currently supported)
+            bool isFD;  //CAN Flexible Data Rate (not currently supported by PCAN_USB)
 
             for (int i = 0; i < handlesArray.Length; i++)
             {
                 // Checks for a Plug&Play Handle and, depending upon the return value, include it
                 // into the list of available hardware channels.
-                LastOperationStatus = PCANBasic.GetValue(handlesArray[i], TPCANParameter.PCAN_CHANNEL_CONDITION, out iBuffer, sizeof(UInt32));
-                if ((LastOperationStatus == TPCANStatus.PCAN_ERROR_OK) && ((iBuffer & PCANBasic.PCAN_CHANNEL_AVAILABLE) == PCANBasic.PCAN_CHANNEL_AVAILABLE))
+                dllRet = PCANBasic.GetValue(handlesArray[i], TPCANParameter.PCAN_CHANNEL_CONDITION, out iBuffer, sizeof(UInt32));
+                if ((dllRet == TPCANStatus.PCAN_ERROR_OK) && ((iBuffer & PCANBasic.PCAN_CHANNEL_AVAILABLE) == PCANBasic.PCAN_CHANNEL_AVAILABLE || (iBuffer & PCANBasic.PCAN_CHANNEL_PCANVIEW) == PCANBasic.PCAN_CHANNEL_PCANVIEW))
                 {
-                    LastOperationStatus = PCANBasic.GetValue(handlesArray[i], TPCANParameter.PCAN_CHANNEL_FEATURES, out iBuffer, sizeof(UInt32));
-                    isFD = (LastOperationStatus == TPCANStatus.PCAN_ERROR_OK) && ((iBuffer & PCANBasic.FEATURE_FD_CAPABLE) == PCANBasic.FEATURE_FD_CAPABLE);
+                    dllRet = PCANBasic.GetValue(handlesArray[i], TPCANParameter.PCAN_CHANNEL_FEATURES, out iBuffer, sizeof(UInt32));
+                    isFD = (dllRet == TPCANStatus.PCAN_ERROR_OK) && ((iBuffer & PCANBasic.FEATURE_FD_CAPABLE) == PCANBasic.FEATURE_FD_CAPABLE);
                     if (PCANDevices == null)
                         PCANDevices = new List<string>();
                     PCANDevices.Add(FormatChannelName(handlesArray[i], isFD));
@@ -79,7 +81,7 @@ namespace CAN.PC
         /// <param name="handle">PCAN-Basic Handle to format</param>
         /// <param name="isFD">If the channel is FD capable</param>
         /// <returns>The formatted text for a channel</returns>
-        private string FormatChannelName(PCANHandle handle, bool isFD)
+        private static string FormatChannelName(PCANHandle handle, bool isFD)
         {
             TPCANDevice devDevice;
             byte byChannel;
@@ -106,8 +108,8 @@ namespace CAN.PC
         /// Returns the PCAN USB handle for a given PEAK displayed handle
         /// </summary>
         /// <param name="PEAKListHandle">Displayed handle string</param>
-        /// <returns>PCAN USB handle</returns>
-        public PCANHandle DecodePEAKHandle(string PEAKListHandle)
+        /// <returns>PCAN USB handle, 0 if no string provided or if string incorrect</returns>
+        public static PCANHandle DecodePEAKHandle(string PEAKListHandle)
         {
             if(!(string.IsNullOrEmpty(PEAKListHandle) || PEAKListHandle.Trim()==string.Empty))
             {
@@ -116,7 +118,7 @@ namespace CAN.PC
                 PEAKListHandle = PEAKListHandle.Replace('h', ' ').Trim(' ');
                 PCANHandle handle = 0;
                 if (!PCANHandle.TryParse(PEAKListHandle, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out handle))
-                    AddMessage(Feedback,"Invalid device handle:" + PEAKListHandle);
+                    handle = 0;
                 return handle;
             }
             else
@@ -124,6 +126,54 @@ namespace CAN.PC
                 return 0;
             }
         }
+        #endregion
+
+        #region Identify device (flashes LED if supported)
+        /// <summary>
+        /// Get identify setting from PCAN USB device
+        /// </summary>
+        /// <param name="PCANUSBHandle">PCAN USB device handle</param>
+        /// <returns>true if identifying is on for the device, else false</returns>
+        public static bool IsIdentifyOn(PCANHandle PCANUSBHandle)
+        {
+            TPCANStatus dllRet = TPCANStatus.PCAN_ERROR_UNKNOWN;    //Assume unknown state to start
+            UInt32 iBuffer; //Passed to PCAN dll in GetValue call
+
+            dllRet = PCANBasic.GetValue(PCANUSBHandle, TPCANParameter.PCAN_CHANNEL_IDENTIFYING, out iBuffer, sizeof(UInt32));
+            if (dllRet == TPCANStatus.PCAN_ERROR_OK && ((iBuffer & PCANBasic.PCAN_PARAMETER_ON) == PCANBasic.PCAN_PARAMETER_ON))
+                return true;
+            else
+                return false;
+            
+        }
+
+        /// <summary>
+        /// Set the identify setting for a PCAN USB device
+        /// </summary>
+        /// <param name="PCANUSBHandle">PCAN USB device handle</param>
+        /// <param name="OnOff">identify on or off</param>
+        /// <returns>true if setting was made correctly, else false if it failed</returns>
+        public static bool SetIdentify(PCANHandle PCANUSBHandle, bool OnOff)
+        {
+            TPCANStatus dllRet = TPCANStatus.PCAN_ERROR_UNKNOWN;    //Assume unknown state to start
+            UInt32 iBuffer; //Passed to PCAN dll in GetValue call
+
+            if (OnOff)
+                iBuffer = PCANBasic.PCAN_PARAMETER_ON;
+            else
+                iBuffer = PCANBasic.PCAN_PARAMETER_OFF;
+
+            dllRet = PCANBasic.SetValue(PCANUSBHandle, TPCANParameter.PCAN_CHANNEL_IDENTIFYING, ref iBuffer, sizeof(UInt32));
+            if (dllRet == TPCANStatus.PCAN_ERROR_OK)
+                return true;
+            else
+                return false;
+
+        }
+        #endregion
+
+        #region Set the user defined device number (not the PEAK id)
+        //PCAN_DEVICE_NUMBER
         #endregion
 
         #region The UI list boxes for UI message and CAN message rx updates
@@ -145,7 +195,7 @@ namespace CAN.PC
         /// <param name="AddTo">Use this list box</param>
         /// <param name="MessageToAdd">Add this message</param>
         /// <returns>Index of the added item or -1</returns>
-        private int AddMessage(ListBox AddTo, string MessageToAdd)
+        private static int AddMessage(ListBox AddTo, string MessageToAdd)
         {
             int ret = -1;
 
@@ -751,6 +801,7 @@ namespace CAN.PC
                 ReadThread = null;
             }
             AddMessage(Feedback, "Uninitialised.");
+            LastOperationStatus = ret;
             return ret;
         }
         #endregion

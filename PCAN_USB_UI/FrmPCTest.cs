@@ -38,7 +38,7 @@ namespace CAN.PC
         private void TimerCheckForDevice_Tick(object sender, EventArgs e)
         {
             TimerCheckForDevice.Enabled = false;
-            List<string> PeakUSBDevices = pCAN.GetUSBDevices();
+            List<string> PeakUSBDevices = PCAN_USB.GetUSBDevices();
             if (PeakUSBDevices != null)
                 LstDevices.Items.AddRange(PeakUSBDevices.ToArray());
             else
@@ -117,7 +117,7 @@ namespace CAN.PC
             //If a peak device is selected allow baud rate selection and start button
             UInt16 handle = 0;
             if (LstDevices.SelectedIndex > -1)
-                handle = pCAN.DecodePEAKHandle(LstDevices.Items[LstDevices.SelectedIndex].ToString());
+                handle = PCAN_USB.DecodePEAKHandle(LstDevices.Items[LstDevices.SelectedIndex].ToString());
             if (handle > 0)
             {
                 GrpInitialize.Enabled = true;
@@ -134,7 +134,7 @@ namespace CAN.PC
             if (ButStartStop.Text == "Start")
             {
                 if (LstDevices.SelectedIndex > -1)
-                    handle = pCAN.DecodePEAKHandle(LstDevices.Items[LstDevices.SelectedIndex].ToString());
+                    handle = PCAN_USB.DecodePEAKHandle(LstDevices.Items[LstDevices.SelectedIndex].ToString());
                 if(handle > 0)
                 {
                     pCAN.PeakCANHandle = handle;
@@ -184,7 +184,6 @@ namespace CAN.PC
             pCAN.Packets = new List<PCAN_USB.Packet>();
             LstReceivedMessages.Items.Clear();
         }
-        #endregion
 
         private void NudLength_ValueChanged(object sender, EventArgs e)
         {
@@ -227,6 +226,31 @@ namespace CAN.PC
             pCAN.OverwriteLastPacket = ChkOverwrite.Checked;
             LstReceivedMessages.Items.Clear();
         }
+
+        private void ButChooseFile_Click(object sender, EventArgs e)
+        {
+            using (FolderBrowserDialog dlg = new FolderBrowserDialog())
+            {
+                dlg.Description = "Select a folder for the trace file";
+                if (dlg.ShowDialog() == DialogResult.OK)
+                {
+                    TxtTraceDir.Text = dlg.SelectedPath;
+                }
+            }
+        }
+
+        private void ChkIdentifyPCANUSB_CheckStateChanged(object sender, EventArgs e)
+        {
+            if (LstDevices.SelectedIndex >= 0)
+            {
+                UInt16 handle = 0; //used to check identifying state of PCAN USB device
+                handle = PCAN_USB.DecodePEAKHandle(LstDevices.Items[LstDevices.SelectedIndex].ToString());
+                //set identify
+                if(handle>0)
+                    PCAN_USB.SetIdentify(handle, ChkIdentifyPCANUSB.Checked);
+            }
+        } 
+        #endregion
 
         #region Logging
 
@@ -288,16 +312,6 @@ namespace CAN.PC
         }
         #endregion
 
-        private void ButChooseFile_Click(object sender, EventArgs e)
-        {
-            using (FolderBrowserDialog dlg = new FolderBrowserDialog())
-            {
-                dlg.Description = "Select a folder for the trace file";
-                if (dlg.ShowDialog() == DialogResult.OK)
-                {
-                    TxtTraceDir.Text = dlg.SelectedPath;
-                }
-            }
-        }
+        
     }
 }
